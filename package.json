@@ -1,0 +1,60 @@
+{
+	"name": "nekofetch",
+	"version": "1.0.0",
+	"description": "nekofetch",
+	"keywords": [
+		"neofetch",
+		"nekofetch",
+		"nodejs pkg",
+		"system info"
+	],
+	"type": "commonjs",
+	"main": "./main.js",
+	"bin": "./main.js",
+	"author": {
+		"name": "fxhxyz4",
+		"email": "fxhxyz7@proton.me",
+		"url": "https://fxhxyz.vercel.app/"
+	},
+	"homepage": "https://nekofetch.vercel.app/",
+	"bugs": "https://github.com/fxhxyz4/nekofetch/issues",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/fxhxyz4/nekofetch.git"
+	},
+	"maintainers": [
+		{
+			"name": "fxhxyz4",
+			"email": "fxhxyz7@proton.me"
+		}
+	],
+	"os": [
+		"linux",
+		"win32",
+		"darwin"
+	],
+	"license": "MIT",
+	"scripts": {
+		"dev": "nodemon .",
+		"dev-config": "cross-env CONFIG_PATH=$HOME/Desktop/dev/nekofetch/config/default.json nodemon .",
+		"build": "pkg . --experimental-modules --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --output ./build/nekofetch",
+		"test": "echo test"
+	},
+	"engines": {
+		"node": "18.x"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.9"
+	},
+	"dependencies": {
+		"asciify-image": "^0.1.10",
+		"cross-env": "^7.0.3",
+		"pkg": "^5.8.1"
+	},
+	"pkg": {
+		"assets": [
+			"assets/*",
+			"config/*"
+		]
+	}
+}
