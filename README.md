@@ -10,22 +10,6 @@
 
 ![](./assets/image.png)
 
-## Platforms supported:
-
-| 🖥️ **Windows** - *In development*  | 🐧 **Linux**               | 🍎 **OSX**         |
-| ---------------- | ------------------------- | ------------------ |
-| 🛠️ **11**        | ✅ **Ubuntu**/**Debian**             | 🛠️ *TODO*          |
-| 🛠️ **10**         |                           |                    |
-| 🛠️ **8.1**        |                           |                    |
-| 🛠️ **8**          |                           |                    |
-| 🛠️ **7**          |                           |                    |
-
-## linux installation
-+ ### download your [release](https://github.com/fxhxyz4/nekofetch/releases)
-+ ### sudo nano ~/.bashrc
-+ ### in the last line:
-+ #### ```path_to_file/nekofetch-linux```
-
 #
 
 ### how to build
