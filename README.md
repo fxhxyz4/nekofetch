@@ -10,7 +10,7 @@
 
 ![image.png](./assets/image.png)
 
-#
+## Check [wiki](https://github.com/fxhxyz4/nekofetch/wiki) for more information.
 
 ### how to build?
 ### read [contribution](CONTRIBUTION.md).
