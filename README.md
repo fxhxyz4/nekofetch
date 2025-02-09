@@ -1,4 +1,4 @@
-# Neofetch killer
+# Neofetch killer)
 
 ![](https://img.shields.io/github/issues/fxhxyz4/nekofetch)
 ![](https://img.shields.io/github/commit-activity/t/fxhxyz4/nekofetch)
@@ -8,14 +8,16 @@
 ![](https://img.shields.io/github/languages/code-size/fxhxyz4/nekofetch)
 ![](https://img.shields.io/github/license/fxhxyz4/nekofetch)
 
-![](./assets/image.png)
+![image.png](./assets/image.png)
 
 #
 
-### how to build
+### how to build?
+### read [contribution](CONTRIBUTION.md).
 ### install packages
-### ```sudo chmod +x ./build.sh```
-### ```./build.sh```
+```bash
+   sudo chmod +x ./build.sh && ./build.sh
+```
 
 #
 
