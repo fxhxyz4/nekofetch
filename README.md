@@ -14,7 +14,7 @@
 
 ### how to build?
 + ### read [contribution](CONTRIBUTION.md).
-+ ### install packages & build
++ ### install packages & build.
 ```bash
    sudo chmod +x ./build.sh && ./build.sh
 ```
