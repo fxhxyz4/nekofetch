@@ -3,9 +3,9 @@
 /*
 ==========================================================
 
-  Author: fxhxyz
-  Email: fxhxyz7@proton.me
-  Website: fxhxyz.vercel.app
+  @Author: fxhxyz
+  @Email: fxhsec@proton.me
+  @Website: fxhxyz.vercel.app
 
    _   _      _          __     _       _
   | \ | |    | |        / _|   | |     | |
@@ -18,7 +18,7 @@
 */
 
 /*
-  * NOTE of json config file
+  * @NOTE of json config file
   * Default config: default.json
   *
   * https://github.com/fxhxyz4/nekofetch/wiki/config
@@ -40,6 +40,7 @@ const ARGUMENTS = process.argv;
 */
 const Main = (ARGUMENTS) => {
   // ARGUMENTS for work with nodejs process.argv
+  // console.log(ARGUMENTS);
 
   const ANSI_FORE_COLORS = [
     "\u001B[97m", // Bright White (Best for black background)
@@ -60,7 +61,10 @@ const Main = (ARGUMENTS) => {
     "\u001B[30m", // Black (Only for light backgrounds)
   ];
 
-  let infoArr = [], color = "", asciiText = "";
+  let infoArr = [],
+    color = "",
+    asciiText = "",
+    CONFIG = {};
 
   /*
   * replace ~/ -> $HOME env
@@ -80,10 +84,13 @@ const Main = (ARGUMENTS) => {
 
   if (!fs.existsSync(CONFIG_PATH)) {
     console.error(`Config file not loaded: ${CONFIG_PATH}`);
-    process.exit(1);
+  } else {
+    try {
+      CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
+    } catch (e) {
+      console.error(e);
+    }
   }
-
-  const CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
 
   console.log("\n");
 
@@ -94,16 +101,27 @@ const Main = (ARGUMENTS) => {
   * @return {String} asciiText
   */
   const checkAsciiPath = (AsciiPath) => {
-    let resolvedPath = AsciiPath ? path.resolve(expandPath(AsciiPath)) : path.join(__dirname, "assets", "ascii.txt");
+    try {
+      if (!AsciiPath || typeof AsciiPath !== "string") {
+        console.error(`Invalid ASCII path`);
+        return "";
+      }
 
-    if (!fs.existsSync(resolvedPath)) {
-      console.error(`ASCII-art file not found: ${resolvedPath}`);
-      return [];
+      let resolvedPath = AsciiPath ? path.resolve(expandPath(AsciiPath)) : path.join(__dirname, "assets", "ascii.txt");
+
+      if (!fs.existsSync(resolvedPath)) {
+        console.error(`ASCII-art file not found: ${resolvedPath}`);
+        return "";
+      }
+
+      asciiText = fs.readFileSync(resolvedPath, { encoding: "utf-8" }).split("\n");
+
+      return asciiText;
+
+    } catch (e) {
+      console.error(e);
+      return;
     }
-
-    asciiText = fs.readFileSync(resolvedPath, { encoding: "utf-8" }).split("\n");
-
-    return asciiText;
   };
 
   /*
@@ -137,6 +155,7 @@ const Main = (ARGUMENTS) => {
               await typeImage(imageParams);
           } catch (e) {
               console.error(e);
+              return;
           }
       } else {
           typeAscii(artPath);
@@ -158,6 +177,11 @@ const Main = (ARGUMENTS) => {
       }
 
       console.log(`\n\n`);
+
+      if (!Array.isArray(infoArr) || infoArr.length === 0) {
+        console.error(`infoArr is empty`);
+        return;
+      }
 
       const maxLines = Math.max(asciiText.length, infoArr.length);
       const asciiPadded = [...asciiText, ...Array(maxLines - asciiText.length).fill("")];
@@ -187,12 +211,12 @@ const Main = (ARGUMENTS) => {
   */
   const checkConfig = (Conf) => {
     try {
-        let { image, imageParams, artPath, randomColor, foregroundColor } = Conf;
+        let { image, artPath, randomColor, foregroundColor } = Conf;
 
-      if (artPath) {
-        checkAsciiPath(artPath);
-      } else if (image === true) {
-        typeImage(image);
+        if (artPath) {
+          checkAsciiPath(artPath);
+        } else if (image) {
+          typeImage(image);
       } else {
         console.error(`Neither image nor ASCII path provided.`);
       }
@@ -210,6 +234,7 @@ const Main = (ARGUMENTS) => {
 
     } catch (e) {
         console.error(e);
+        return;
     }
   };
 
@@ -221,7 +246,6 @@ const Main = (ARGUMENTS) => {
     uptime,
     platform,
     hostname,
-    machine,
     networkInterfaces,
     cpus,
     userInfo
@@ -233,7 +257,7 @@ const Main = (ARGUMENTS) => {
   * @param {String} Percentage
   */
   const showProgressBar = (Percentage) => {
-    const BAR_LENGTH = 20;
+    const BAR_LENGTH = 30;
     let blockCount = Math.floor(Percentage / (100 / BAR_LENGTH));
 
     let emptyCount = BAR_LENGTH - blockCount;
@@ -261,35 +285,41 @@ const Main = (ARGUMENTS) => {
   * @return {String} resultString
   */
   const osInfo = () => {
-    let resultString = "";
+    try {
+      let resultString = "";
 
-    const archVersion = os.arch() === "x64" ? "x86_64" : os.arch();
-    let osName = platform();
+      const archVersion = os.arch() === "x64" ? "x86_64" : os.arch();
+      let osName = platform();
 
-    if (osName == "linux") {
-      if (fs.existsSync("/etc/os-release")) {
-        let osRelease = fs.readFileSync("/etc/os-release", "utf-8");
+      if (osName == "linux") {
+        if (fs.existsSync("/etc/os-release")) {
+          let osRelease = fs.readFileSync("/etc/os-release", "utf-8");
 
-        const MATCH = osRelease.match(/^PRETTY_NAME="(.+)"$/m);
-        if (MATCH) osName = MATCH[1];
+          const MATCH = osRelease.match(/^PRETTY_NAME="(.+)"$/m);
+          if (MATCH) osName = MATCH[1];
+        }
+      } else if (osName == "win32") {
+        try {
+          osName = execSync('wmic os get Caption', { encoding: "utf-8" })
+            .split("\n")[1]
+            .trim();
+        } catch {
+          osName = "Windows (Unknown Version)";
+        }
+      } else if (osName == "darwin") {
+        osName = execSync("sw_vers -productName", { encoding: "utf-8" }).trim();
+
+        const VERSION = execSync("sw_vers -productVersion", { encoding: "utf-8" }).trim();
+        osName += ` ${VERSION}`;
       }
-    } else if (osName == "win32") {
-      try {
-        osName = execSync('wmic os get Caption', { encoding: "utf-8" })
-          .split("\n")[1]
-          .trim();
-      } catch {
-        osName = "Windows (Unknown Version)";
-      }
-    } else if (osName == "darwin") {
-      osName = execSync("sw_vers -productName", { encoding: "utf-8" }).trim();
 
-      const VERSION = execSync("sw_vers -productVersion", { encoding: "utf-8" }).trim();
-      osName += ` ${VERSION}`;
+      resultString = `${osName} ${archVersion}`;
+      return resultString;
+
+    } catch (e) {
+      console.error(e);
+      return;
     }
-
-    resultString = `${osName} ${archVersion}`;
-    return resultString;
   };
 
   /*
@@ -346,7 +376,7 @@ const Main = (ARGUMENTS) => {
       return kernelInfo;
     }
 
-    return null;
+    return 0;
   };
 
   /*
@@ -402,7 +432,7 @@ const Main = (ARGUMENTS) => {
     const SHELL_INFO = userInfo();
 
     let shell = SHELL_INFO.shell || "unknown";
-    let version = null;
+    let version = "Undefined";
 
     const shells = ["bash", "zsh", "fish", "csh", "tcsh", "dash", "sh", "ksh"];
 
@@ -420,8 +450,10 @@ const Main = (ARGUMENTS) => {
       if (VERSION_MATCH) {
         return `${shell} ${VERSION_MATCH[1]}`
       }
+
     } catch (e) {
       console.error(`Error fetching version for ${shell}: `, e);
+      return;
     }
 
     resultString = `${shell}`;
@@ -436,7 +468,7 @@ const Main = (ARGUMENTS) => {
   const ipInfo = () => {
     if (CONFIG.ip) {
       let nets = networkInterfaces();
-      let ip = null;
+      let ip = 0;
 
       for (const key in nets) {
         for (const net of nets[key]) {
@@ -447,6 +479,7 @@ const Main = (ARGUMENTS) => {
           }
         }
 
+        // next calls end
         if (ip) return;
       }
     }
@@ -458,21 +491,29 @@ const Main = (ARGUMENTS) => {
   * @return {String} result
   */
   const resolutionInfo = () => {
-    let resolution = null;
+    let resolution = "";
     let result = "";
 
-    if (os.platform() == "linux") {
-      resolution = execSync('xrandr | grep "\\*"').toString().trim();
-    } else if (os.platform() == "darwin") {
-      resolution = execSync('system_profiler SPDisplaysDataType | grep "Resolution"').toString().trim();
-    } else if (os.platform() == "win32") {
-      resolution = execSync('wmic desktopmonitor get screenheight,screenwidth').toString().trim();
+    try {
+      if (os.platform() == "linux") {
+        resolution = execSync('xrandr | grep "\\*"').toString().trim();
+      } else if (os.platform() == "darwin") {
+        resolution = execSync('system_profiler SPDisplaysDataType | grep "Resolution"').toString().trim();
+      } else if (os.platform() == "win32") {
+        resolution = execSync('wmic desktopmonitor get screenheight,screenwidth').toString().trim();
+      }
+
+      if (resolution) {
+        const RESOLUTION_MATCH = resolution.match(/\d+x\d+/);
+        result = RESOLUTION_MATCH ? RESOLUTION_MATCH[0] : 'not found';
+      }
+
+      return result;
+
+    } catch (e) {
+      console.error(e);
+      return;
     }
-
-    const RESOLUTION_MATCH = resolution.match(/\d+x\d+/);
-    result = RESOLUTION_MATCH ? RESOLUTION_MATCH[0] : 'not found';
-
-    return result;
   };
 
   /*
@@ -481,13 +522,13 @@ const Main = (ARGUMENTS) => {
   * @return {String} _de[0]
   */
   const deInfo = () => {
-    const _de = process.env.XDG_CURRENT_DESKTOP ? process.env.XDG_CURRENT_DESKTOP.match(/(\w+)$/) : null;
+    const _de = process.env.XDG_CURRENT_DESKTOP ? process.env.XDG_CURRENT_DESKTOP.match(/(\w+)$/) : 0;
 
     if (_de) {
       return _de[0].trim();
     }
 
-    return null;
+    return 0;
   };
 
   /*
@@ -506,8 +547,10 @@ const Main = (ARGUMENTS) => {
       }
 
       return terminal;
+
     } catch (e) {
       console.error(e);
+      return;
     }
   };
 
@@ -531,18 +574,24 @@ const Main = (ARGUMENTS) => {
   const gpuInfo = () => {
     let gpu = "unknown";
 
-    if (os.platform() == "linux") {
-      let gpuOut = execSync("lshw -C display").toString().trim();
-      let prod = gpuOut.match(/product:\s(.*)/);
+    try {
+      if (os.platform() == "linux") {
+        let gpuOut = execSync("lshw -C display").toString().trim();
+        let prod = gpuOut.match(/product:\s(.*)/);
 
-      gpu = prod ? prod[1] : 'unknown';
-    } else if (os.platform() == "win32") {
-      gpu = execSync("wmic path win32_VideoController get name").toString().trim();
-    } else if (os.platform() == "darwin") {
-      gpu = execSync("system_profiler | grep GeForce").toString().trim();
+        gpu = prod && prod[1] ? prod[1].trim() : 'unknown';
+      } else if (os.platform() == "win32") {
+        gpu = execSync("wmic path win32_videocontroller get caption").toString().trim();
+      } else if (os.platform() == "darwin") {
+        gpu = execSync("system_profiler SPDisplaysDataType | grep 'Chipset Model'").toString().trim();
+      }
+
+      return gpu;
+
+    } catch (e) {
+      console.error(e);
+      return;
     }
-
-    return gpu;
   };
 
   /*
@@ -587,12 +636,12 @@ const Main = (ARGUMENTS) => {
   infoArr = [
     `\x1b[1m${color}OS:\x1b[0m ${_OS}`,
     `\x1b[1m${color}Host:\x1b[0m ${_HOST}`,
-    `\x1b[1m${color}Kernel:\x1b[0m ${_KERNEL == null ? "" : _KERNEL}`,
+    `\x1b[1m${color}Kernel:\x1b[0m ${_KERNEL == 0 ? "" : _KERNEL}`,
     `\x1b[1m${color}Uptime:\x1b[0m ${_UPTIME}`,
     `\x1b[1m${color}Home:\x1b[0m ${_HOME}`,
     `\x1b[1m${color}Shell:\x1b[0m ${_SHELL}`,
     `\x1b[1m${color}Resolution:\x1b[0m ${_RESOLUTION}`,
-    `\x1b[1m${color}DE:\x1b[0m ${_DE == null ? "" : _DE}`,
+    `\x1b[1m${color}DE:\x1b[0m ${_DE == 0 ? "" : _DE}`,
     `\x1b[1m${color}Terminal:\x1b[0m ${_TERMINAL}`,
     `\x1b[1m${color}IP:\x1b[0m ${CONFIG.ip === false ? "127.0.0.1" : _IP}`,
     `\x1b[1m${color}GPU:\x1b[0m ${_GPU}`,
