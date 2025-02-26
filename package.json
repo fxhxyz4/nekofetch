@@ -37,9 +37,11 @@
 	"scripts": {
 		"dev": "nodemon .",
 		"dev-config": "cross-env CONFIG_PATH=$HOME/Desktop/dev/nekofetch/config/default.json nodemon .",
-		"build-linux": "pkg . --experimental-modules --targets node18-linux-x64 --output ./build/nekofetch",
-    "build-win": "pkg . --experimental-modules --targets node18-win-x64 --output ./build/nekofetch",
-    "build-mac": "pkg . --experimental-modules --targets node18-macos-x64 --output ./build/nekofetch",
+    "node": "node .",
+    "node-config": "cross-env CONFIG_PATH=$HOME/Desktop/dev/nekofetch/config/default.json node .",
+		"build-linux": "pkg . --experimental-modules --targets node18-linux-x64 --output ./build/nekofetch-linux",
+    "build-win": "pkg . --experimental-modules --targets node18-win-x64 --output ./build/nekofetch-win",
+    "build-mac": "pkg . --experimental-modules --targets node18-macos-x64 --output ./build/nekofetch-mac",
     "build": "npm run build-linux && npm run build-win && npm run build-mac",
 		"test": "echo test"
 	},
