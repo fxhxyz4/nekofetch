@@ -13,8 +13,8 @@
 ## Check [wiki](https://github.com/fxhxyz4/nekofetch/wiki) for more information.
 
 ### how to build?
-### read [contribution](CONTRIBUTION.md).
-### install packages & build
++ ### read [contribution](CONTRIBUTION.md).
++ ### install packages & build
 ```bash
    sudo chmod +x ./build.sh && ./build.sh
 ```
