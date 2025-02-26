@@ -13,10 +13,10 @@
 	"bin": "./main.js",
 	"author": {
 		"name": "fxhxyz4",
-		"email": "fxhxyz7@proton.me",
+		"email": "fxhsec@proton.me",
 		"url": "https://fxhxyz.vercel.app/"
 	},
-	"homepage": "https://nekofetch.vercel.app/",
+	"homepage": "https://github.com/fxhxyz4/nekofetch/wiki/",
 	"bugs": "https://github.com/fxhxyz4/nekofetch/issues",
 	"repository": {
 		"type": "git",
@@ -25,7 +25,7 @@
 	"maintainers": [
 		{
 			"name": "fxhxyz4",
-			"email": "fxhxyz7@proton.me"
+			"email": "fxhsec@proton.me"
 		}
 	],
 	"os": [
@@ -37,7 +37,10 @@
 	"scripts": {
 		"dev": "nodemon .",
 		"dev-config": "cross-env CONFIG_PATH=$HOME/Desktop/dev/nekofetch/config/default.json nodemon .",
-		"build": "pkg . --experimental-modules --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --output ./build/nekofetch",
+		"build-linux": "pkg . --experimental-modules --targets node18-linux-x64 --output ./build/nekofetch",
+    "build-win": "pkg . --experimental-modules --targets node18-win-x64 --output ./build/nekofetch",
+    "build-mac": "pkg . --experimental-modules --targets node18-macos-x64 --output ./build/nekofetch",
+    "build": "npm run build-linux && npm run build-win && npm run build-mac",
 		"test": "echo test"
 	},
 	"engines": {
