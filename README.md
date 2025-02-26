@@ -10,9 +10,12 @@
 
 ![image.png](./assets/image.png)
 
-## Check [wiki](https://github.com/fxhxyz4/nekofetch/wiki) for more information.
++ ### How to [install](https://github.com/fxhxyz4/nekofetch/wiki/install)?
++ ### Check [wiki](https://github.com/fxhxyz4/nekofetch/wiki) for more information.
 
-### how to build?
+#
+
+### how to build nekofetch?
 + ### read [contribution](CONTRIBUTION.md).
 + ### install packages & build.
 ```bash
