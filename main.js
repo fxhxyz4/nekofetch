@@ -1,25 +1,27 @@
 #!/usr/bin/env node
 
 /*
-==========================================================
+@==========================================================
 
   @Author: fxhxyz
   @Email: fxhsec@proton.me
   @Website: fxhxyz.vercel.app
 
-   _   _      _          __     _       _
-  | \ | |    | |        / _|   | |     | |
-  |  \| | ___| | _____ | |_ ___| |_ ___| |__
-  | . ` |/ _ \ |/ / _ \|  _/ _ \ __/ __| '_ \
-  | |\  |  __/   < (_) | ||  __/ || (__| | | |
-  |_| \_|\___|_|\_\___/|_| \___|\__\___|_| |_|
+  @ _   _      _          __     _       _
+  @| \ | |    | |        / _|   | |     | |
+  @|  \| | ___| | _____ | |_ ___| |_ ___| |__
+  @| . ` |/ _ \ |/ / _ \|  _/ _ \ __/ __| '_ \
+  @| |\  |  __/   < (_) | ||  __/ || (__| | | |
+  @|_| \_|\___|_|\_\___/|_| \___|\__\___|_| |_|
 
-==========================================================
+@==========================================================
 */
 
 /*
   * @NOTE of json config file
   * Default config: default.json
+  *
+  * Test config: config.json
   *
   * https://github.com/fxhxyz4/nekofetch/wiki/config
   * ------------------------------------------------
@@ -38,9 +40,13 @@ const ARGUMENTS = process.argv;
 * Main - главшпан
 * @param {Array} ARGUMENTS
 */
-const Main = (ARGUMENTS) => {
+const main = (ARGUMENTS) => {
   // ARGUMENTS for work with nodejs process.argv
   // console.log(ARGUMENTS);
+
+  let config = {},
+    infoArr = [],
+    color = "";
 
   const ANSI_FORE_COLORS = [
     "\u001B[97m", // Bright White (Best for black background)
@@ -61,188 +67,16 @@ const Main = (ARGUMENTS) => {
     "\u001B[30m", // Black (Only for light backgrounds)
   ];
 
-  let infoArr = [],
-    color = "",
-    asciiText = "",
-    CONFIG = {};
-
   /*
   * replace ~/ -> $HOME env
   *
-  * @param {String} FilePath
-  * @return {String} FilePath
+  * @param {String} Path
+  * @return {String} Path
   */
-  const expandPath = (FilePath) => FilePath.replace(/^~/, process.env.HOME);
-
-  /*
-  * resolve path to ascii art
-  * typed path or default.json path
-  */
-  const CONFIG_PATH = process.env.CONFIG_PATH
-    ? path.resolve(expandPath(process.env.CONFIG_PATH))
-    : path.resolve(__dirname, "./config/default.json");
-
-  if (!fs.existsSync(CONFIG_PATH)) {
-    console.error(`Config file not loaded: ${CONFIG_PATH}`);
-  } else {
-    try {
-      CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  console.log("\n");
-
-  /*
-  * load ASCII-art
-  *
-  * @param {String} AsciiPath
-  * @return {String} asciiText
-  */
-  const checkAsciiPath = (AsciiPath) => {
-    try {
-      if (!AsciiPath || typeof AsciiPath !== "string") {
-        console.error(`Invalid ASCII path`);
-        return "";
-      }
-
-      let resolvedPath = AsciiPath ? path.resolve(expandPath(AsciiPath)) : path.join(__dirname, "assets", "ascii.txt");
-
-      if (!fs.existsSync(resolvedPath)) {
-        console.error(`ASCII-art file not found: ${resolvedPath}`);
-        return "";
-      }
-
-      asciiText = fs.readFileSync(resolvedPath, { encoding: "utf-8" }).split("\n");
-
-      return asciiText;
-
-    } catch (e) {
-      console.error(e);
-      return;
-    }
-  };
-
-  /*
-  * type image
-  *
-  * @param {Object} {ImageParam}
-  */
-  const typeImage = async (ImageParams) => {
-    return new Promise((resolve, reject) => {
-      asciify(ImageParams.path, ImageParams, (err, asciified) => {
-
-        if (err) {
-            reject(`Error displaying image: ${err}`);
-            return;
-        }
-
-        typeAscii(asciified);
-        resolve();
-      });
-    });
-};
-
-  /*
-  * display image and ascii art
-  */
-  const displayOutput = async () => {
-      const { image, imageParams, artPath } = CONFIG;
-
-      if (image) {
-          try {
-              await typeImage(imageParams);
-          } catch (e) {
-              console.error(e);
-              return;
-          }
-      } else {
-          typeAscii(artPath);
-      }
-  };
-
-  /*
-  * type ascii
-  *
-  * @param {String} Input
-  */
-  const typeAscii = (Input) => {
-      let asciiText;
-
-      if (typeof Input === "string" && Input.includes("\n")) {
-          asciiText = Input.split("\n");
-      } else {
-          asciiText = checkAsciiPath(Input);
-      }
-
-      console.log(`\n\n`);
-
-      if (!Array.isArray(infoArr) || infoArr.length === 0) {
-        console.error(`infoArr is empty`);
-        return;
-      }
-
-      const maxLines = Math.max(asciiText.length, infoArr.length);
-      const asciiPadded = [...asciiText, ...Array(maxLines - asciiText.length).fill("")];
-
-      asciiPadded.forEach((line, index) => {
-          const infoLine = infoArr[index] || "";
-          console.log(`\x1b[1m${color}${line.padEnd(30)}  ${infoLine}\x1b[0m`);
-      });
-
-      console.log(`\n\n`);
-  };
-
-  /*
-  * change terminal color with ansi codes
-  *
-  * @param {String} Foreground
-  */
-  const changeTerminalColor = (Foreground) => {
-    console.log(Foreground);
-    color = Foreground;
-  };
-
-  /*
-  * check config
-  *
-  * @param {Object} {Conf}
-  */
-  const checkConfig = (Conf) => {
-    try {
-        let { image, artPath, randomColor, foregroundColor } = Conf;
-
-        if (artPath) {
-          checkAsciiPath(artPath);
-        } else if (image) {
-          typeImage(image);
-      } else {
-        console.error(`Neither image nor ASCII path provided.`);
-      }
-
-      if (randomColor) {
-        color = ANSI_FORE_COLORS[Math.floor(Math.random() * ANSI_FORE_COLORS.length)];
-
-        changeTerminalColor(color);
-      }
-
-      if (foregroundColor && randomColor === false) {
-        color = foregroundColor;
-        changeTerminalColor(color);
-      }
-
-    } catch (e) {
-        console.error(e);
-        return;
-    }
-  };
-
-  // CONFIG statement
-  if (CONFIG) checkConfig(CONFIG);
+  const resolvePath = (Path) => Path.startsWith("/") || Path.startsWith("~") ? path.resolve(Path.replace(/^~/, process.env.HOME)) : path.resolve(baseDir, Path);
 
   // Get methods from os module
-  const {
+  let {
     uptime,
     platform,
     hostname,
@@ -257,7 +91,7 @@ const Main = (ARGUMENTS) => {
   * @param {String} Percentage
   */
   const showProgressBar = (Percentage) => {
-    const BAR_LENGTH = 30;
+    const BAR_LENGTH = 24;
     let blockCount = Math.floor(Percentage / (100 / BAR_LENGTH));
 
     let emptyCount = BAR_LENGTH - blockCount;
@@ -310,6 +144,7 @@ const Main = (ARGUMENTS) => {
         osName = execSync("sw_vers -productName", { encoding: "utf-8" }).trim();
 
         const VERSION = execSync("sw_vers -productVersion", { encoding: "utf-8" }).trim();
+
         osName += ` ${VERSION}`;
       }
 
@@ -466,21 +301,21 @@ const Main = (ARGUMENTS) => {
   * @return {String} ip
   */
   const ipInfo = () => {
-    if (CONFIG.ip) {
+    if (ip) {
       let nets = networkInterfaces();
-      let ip = 0;
+      let ipRes = 0;
 
       for (const key in nets) {
         for (const net of nets[key]) {
           if (net.family === "IPv4" && !net.internal) {
-            ip = net.address;
+            ipRes = net.address;
 
-            return ip.trim();
+            return ipRes.trim();
           }
         }
 
         // next calls end
-        if (ip) return;
+        if (ipRes) return;
       }
     }
   };
@@ -547,7 +382,6 @@ const Main = (ARGUMENTS) => {
       }
 
       return terminal;
-
     } catch (e) {
       console.error(e);
       return;
@@ -594,6 +428,44 @@ const Main = (ARGUMENTS) => {
     }
   };
 
+  const getUserInfo = () => {
+    let user = os.userInfo().username;
+
+    return user;
+  }
+
+  const getHostInfo = () => {
+    let host = os.hostname();
+
+    return host;
+  }
+
+  const createFullUser = () => {
+    let result = "";
+
+    let host = getHostInfo();
+    let user = getUserInfo();
+
+    result += `\x1b[1m${color}${user}\x1b[0m@\x1b[1m${color}${host}`;
+    return result;
+  }
+
+  const createHyphen = () => {
+    const SYMB = "-";
+    let hyphen = "";
+
+    let user = getUserInfo();
+    let host = getHostInfo();
+
+    let len = `${user}@${host}`.length;
+
+    for (let i = 0; i < len; i++) {
+      hyphen += SYMB;
+    }
+
+    return hyphen;
+  }
+
   /*
   * get memory info
   *
@@ -608,49 +480,213 @@ const Main = (ARGUMENTS) => {
     let freeMemGB = (freeMem / 1024 / 1024 ).toFixed(0);
     let totalMemGB = (totalMem / 1024 / 1024 ).toFixed(0);
 
+    let occupiedMemGB = (totalMemGB - freeMemGB).toFixed(0);
+
     let usedMemoryPercent = ((1 - freeMem / totalMem) * 100).toFixed(2);
     global.memoryBar = showProgressBar(usedMemoryPercent);
 
-    result = `${freeMemGB}MiB / ${totalMemGB}MiB (${usedMemoryPercent}%)`
-
+    result = `${occupiedMemGB}MiB / ${totalMemGB}MiB (${usedMemoryPercent}%)`;
     return result;
   };
 
-  // create variables
-  const _OS = osInfo();
-  const _HOST = hostInfo();
-  const _KERNEL = kernelInfo();
-  const _UPTIME = uptimeInfo();
-  const _HOME = homeInfo();
-  const _SHELL = shellInfo();
-  const _IP = ipInfo();
-  const _RESOLUTION = resolutionInfo();
-  const _DE = deInfo();
-  const _TERMINAL = terminalInfo();
-  const _CPU = cpuInfo();
-  const _GPU = gpuInfo();
-  const _MEM = memoryInfo();
+  const displayOutput = () => {
+    // create variables
+    const _ = createHyphen();
+    const _OS = osInfo();
+    const _HOST = hostInfo();
+    const _KERNEL = kernelInfo();
+    const _UPTIME = uptimeInfo();
+    const _HOME = homeInfo();
+    const _SHELL = shellInfo();
+    const _IP = ipInfo();
+    const _RESOLUTION = resolutionInfo();
+    const _DE = deInfo();
+    const _TERMINAL = terminalInfo();
+    const _CPU = cpuInfo();
+    const _GPU = gpuInfo();
+    const _MEM = memoryInfo();
 
-  // output info array
-  // with color
-  infoArr = [
-    `\x1b[1m${color}OS:\x1b[0m ${_OS}`,
-    `\x1b[1m${color}Host:\x1b[0m ${_HOST}`,
-    `\x1b[1m${color}Kernel:\x1b[0m ${_KERNEL == 0 ? "" : _KERNEL}`,
-    `\x1b[1m${color}Uptime:\x1b[0m ${_UPTIME}`,
-    `\x1b[1m${color}Home:\x1b[0m ${_HOME}`,
-    `\x1b[1m${color}Shell:\x1b[0m ${_SHELL}`,
-    `\x1b[1m${color}Resolution:\x1b[0m ${_RESOLUTION}`,
-    `\x1b[1m${color}DE:\x1b[0m ${_DE == 0 ? "" : _DE}`,
-    `\x1b[1m${color}Terminal:\x1b[0m ${_TERMINAL}`,
-    `\x1b[1m${color}IP:\x1b[0m ${CONFIG.ip === false ? "127.0.0.1" : _IP}`,
-    `\x1b[1m${color}GPU:\x1b[0m ${_GPU}`,
-    `\x1b[1m${color}CPU:\x1b[0m ${_CPU}`,
-    `\x1b[1m${color}Memory:\x1b[0m ${_MEM}`,
-    `\x1b[1m${color}Memory Scheme:\x1b[0m ${global.memoryBar}`,
-  ];
+    // output info array
+    // with color
+    infoArr = [
+      createFullUser(),
+      `\x1b[0m${_}`,
+      `\x1b[1m${color}OS:\x1b[0m ${_OS}`,
+      `\x1b[1m${color}Host:\x1b[0m ${_HOST}`,
+      `\x1b[1m${color}Kernel:\x1b[0m ${_KERNEL === 0 ? "" : _KERNEL}`,
+      `\x1b[1m${color}Uptime:\x1b[0m ${_UPTIME}`,
+      `\x1b[1m${color}Home:\x1b[0m ${_HOME}`,
+      `\x1b[1m${color}Shell:\x1b[0m ${_SHELL}`,
+      `\x1b[1m${color}Resolution:\x1b[0m ${_RESOLUTION}`,
+      `\x1b[1m${color}DE:\x1b[0m ${_DE === 0 ? "" : _DE}`,
+      `\x1b[1m${color}Terminal:\x1b[0m ${_TERMINAL}`,
+      `\x1b[1m${color}IP:\x1b[0m ${ip === false ? "127.0.0.1" : _IP}`,
+      `\x1b[1m${color}GPU:\x1b[0m ${_GPU}`,
+      `\x1b[1m${color}CPU:\x1b[0m ${_CPU}`,
+      `\x1b[1m${color}Memory:\x1b[0m ${_MEM}`,
+      `\x1b[1m${color}Memory Scheme:\x1b[0m ${global.memoryBar}`,
+    ];
+  }
 
-  displayOutput();
+  // get path to config file
+  let configPath = process.env.CONFIG_PATH ? resolvePath(process.env.CONFIG_PATH) : path.resolve(__dirname, "default.json");
+
+  if (!fs.existsSync(configPath)) {
+    console.error(`Config file not found: ${configPath}`);
+  }
+
+  const parseConfig = () => {
+    try {
+      config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    } catch (e) {
+      console.error(`Error reading config file: ${e}`);
+    }
+  }
+
+  console.log("\n");
+
+  parseConfig();
+
+  let {
+    image,
+    imageParams,
+    artPath,
+    randomColor,
+    foregroundColor,
+    ip,
+  } = config;
+
+  /*
+  * change terminal color with ansi codes
+  *
+  * @param {String} Foreground
+  */
+  const changeTerminalColor = (Foreground) => {
+    console.log(Foreground);
+    color = Foreground;
+  };
+
+  // create base directory
+  const baseDir = path.dirname(path.join(configPath, ".."));
+
+  artPath = artPath ? resolvePath(artPath) : path.join(baseDir, "assets/ascii.txt");
+
+  if (imageParams && imageParams.path) {
+    imageParams.path = resolvePath(imageParams.path);
+  }
+
+  if (!fs.existsSync(artPath)) {
+    console.error(`ASCII file not found: ${artPath}`);
+    return;
+  }
+
+  /*
+  * type ascii
+  *
+  * @param {String} Input
+  */
+  const typeAscii = (Input) => {
+    let asciiText;
+
+    if (typeof Input === "string") {
+      asciiText = Input.split("\n");
+    } else if (Array.isArray(Input)) {
+      asciiText = Input;
+    } else {
+      console.error("Invalid ASCII input");
+      return;
+    }
+
+    displayOutput();
+
+    console.log("\n\n");
+
+    if (!Array.isArray(infoArr) || infoArr.length === 0) {
+      console.error(`infoArr is empty`);
+      return;
+    }
+
+    const maxLines = Math.max(asciiText.length, infoArr.length);
+    const asciiPadded = [...asciiText, ...Array(maxLines - asciiText.length).fill("")];
+
+    asciiPadded.forEach((line, index) => {
+        const infoLine = infoArr[index] || "";
+        console.log(`\x1b[1m${color}${line.padEnd(28)}  ${infoLine}\x1b[0m`);
+    });
+
+    console.log("\n");
+  };
+
+  const showASCII = async () => {
+    try {
+      if (!artPath || typeof artPath !== "string") {
+        console.error(`Invalid ASCII art path`);
+        return "";
+      }
+
+      if (!fs.existsSync(artPath)) {
+        console.error(`ASCII-art file not found: ${artPath}`);
+        return "";
+      }
+
+      let asciiText = fs.readFileSync(artPath, { encoding: "utf-8" }).split("\n");
+      typeAscii(asciiText);
+
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+  };
+
+  const showImage = async () => {
+    if (!imageParams || !fs.existsSync(imageParams.path)) {
+      console.error(`Image file not found: ${imageParams.path}`);
+      return;
+    }
+    else {
+      return new Promise((resolve, reject) => {
+        asciify(imageParams.path, imageParams, (err, asciified) => {
+
+          if (err) {
+            reject(`Error displaying image: ${err}`);
+            return;
+          }
+
+          typeAscii(asciified);
+          resolve();
+        });
+      });
+    }
+  };
+
+  const checkConfig = () => {
+    try {
+      if (randomColor) {
+        let rnd = ANSI_FORE_COLORS[Math.floor(Math.random() * ANSI_FORE_COLORS.length)];
+
+        changeTerminalColor(rnd);
+      }
+
+      if (foregroundColor && randomColor === false) {
+        changeTerminalColor(foregroundColor);
+      }
+
+      if (image) {
+        showImage();
+      } else if (artPath && image === false) {
+        showASCII();
+      } else {
+        console.error(`Neither image nor ASCII path provided.`);
+        return;
+      }
+    } catch (e) {
+        console.error(e);
+        return;
+    }
+  };
+
+  // CONFIG statement
+  if (config) checkConfig();
 }
 
-Main(ARGUMENTS);
+main(ARGUMENTS);
