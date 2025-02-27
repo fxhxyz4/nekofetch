@@ -529,7 +529,7 @@ const main = (ARGUMENTS) => {
   }
 
   // get path to config file
-  let configPath = process.env.CONFIG_PATH ? resolvePath(process.env.CONFIG_PATH) : path.resolve(__dirname, "default.json");
+  let configPath = process.env.CONFIG_PATH ? resolvePath(process.env.CONFIG_PATH) : path.resolve(__dirname, "config", "default.json");
 
   if (!fs.existsSync(configPath)) {
     console.error(`Config file not found: ${configPath}`);
