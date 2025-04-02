@@ -46,6 +46,7 @@ const main = (ARGUMENTS) => {
 
   let config = {},
     infoArr = [],
+    progressColor = "",
     color = "";
 
   const ANSI_FORE_COLORS = [
@@ -94,8 +95,14 @@ const main = (ARGUMENTS) => {
     const BAR_LENGTH = 24;
     let blockCount = Math.floor(Percentage / (100 / BAR_LENGTH));
 
+    progressColor = color;
+
+    if (color === "\x1b[37m" || color === "\x1b[97m") {
+      progressColor = "\x1b[90m";
+    }
+
     let emptyCount = BAR_LENGTH - blockCount;
-    let blockFilled = `\x1b[96m${color}█`;
+    let blockFilled = `\x1b[96m${progressColor}█`;
 
     let blockEmpty = "\x1b[37m█";
     let resetColor = "\x1b[0m";
