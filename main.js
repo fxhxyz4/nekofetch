@@ -675,6 +675,8 @@ const main = ARGUMENTS => {
     const maxAsciiWidth = Math.max(...asciiPadded.map(line => line.length));
     const asciiColumnWidth = Math.max(30, maxAsciiWidth + 2);
 
+    console.log('\n\n');
+
     for (let i = 0; i < maxLines; i++) {
       const asciiLine = asciiPadded[i].padEnd(asciiColumnWidth, ' ');
       console.log(asciiLine + infoPadded[i]);
