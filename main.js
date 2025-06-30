@@ -645,6 +645,8 @@ const main = ARGUMENTS => {
   const typeAscii = (Input, InfoArr) => {
     let asciiText;
 
+    console.log('\n\n');
+
     if (typeof Input === 'string') {
       asciiText = Input.split('\n');
     } else if (Array.isArray(Input)) {
