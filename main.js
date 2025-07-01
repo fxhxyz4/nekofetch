@@ -18,96 +18,102 @@
 */
 
 /*
-  * @NOTE of json config file
-  * Default config: default.json
-  *
-  * Test config: config.json
-  *
-  * https://github.com/fxhxyz4/nekofetch/wiki/config
-  * ------------------------------------------------
-*/
+ * @NOTE of json config file
+ * Default config: default.json
+ *
+ * Test config: config.json
+ *
+ * https://github.com/fxhxyz4/nekofetch/wiki/config
+ * ------------------------------------------------
+ */
 
-const { execSync } = require("child_process");
+const { execSync } = require('child_process');
 const asciify = require('asciify-image');
-const process = require("process");
-const path = require("path");
-const fs = require("fs");
-const os = require("os");
+const process = require('process');
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
 
 const ARGUMENTS = process.argv;
 
 /*
-* Main - главшпан
-* @param {Array} ARGUMENTS
-*/
-const main = (ARGUMENTS) => {
+ * Main - главшпан
+ * @param {Array} ARGUMENTS
+ */
+const main = ARGUMENTS => {
   // ARGUMENTS for work with nodejs process.argv
   // console.log(ARGUMENTS);
 
   let config = {},
     infoArr = [],
-    progressColor = "",
-    color = "";
+    progressColor = '',
+    color = '';
 
   const ANSI_FORE_COLORS = [
-    "\u001B[97m", // Bright White (Best for black background)
-    "\u001B[96m", // Bright Cyan
-    "\u001B[95m", // Bright Magenta
-    "\u001B[94m", // Bright Blue
-    "\u001B[93m", // Bright Yellow
-    "\u001B[92m", // Bright Green
-    "\u001B[91m", // Bright Red
-    "\u001B[90m", // Bright Black (Gray)
-    "\u001B[37m", // White
-    "\u001B[36m", // Cyan
-    "\u001B[35m", // Magenta
-    "\u001B[34m", // Blue
-    "\u001B[33m", // Yellow
-    "\u001B[32m", // Green
-    "\u001B[31m", // Red
-    "\u001B[30m", // Black (Only for light backgrounds)
+    '\u001B[97m', // Bright White (Best for black background)
+    '\u001B[96m', // Bright Cyan
+    '\u001B[95m', // Bright Magenta
+    '\u001B[94m', // Bright Blue
+    '\u001B[93m', // Bright Yellow
+    '\u001B[92m', // Bright Green
+    '\u001B[91m', // Bright Red
+    '\u001B[90m', // Bright Black (Gray)
+    '\u001B[37m', // White
+    '\u001B[36m', // Cyan
+    '\u001B[35m', // Magenta
+    '\u001B[34m', // Blue
+    '\u001B[33m', // Yellow
+    '\u001B[32m', // Green
+    '\u001B[31m', // Red
+    '\u001B[30m', // Black (Only for light backgrounds)
   ];
 
+  let configPath = process.env.CONFIG_PATH
+    ? path.resolve(process.env.CONFIG_PATH.replace(/^~/, process.env.HOME))
+    : path.resolve(__dirname, 'config', 'default.json');
+
+  const baseDir = path.dirname(path.join(configPath, '..'));
+
   /*
-  * replace ~/ -> $HOME env
-  *
-  * @param {String} Path
-  * @return {String} Path
-  */
-  const resolvePath = (Path) => Path.startsWith("/") || Path.startsWith("~") ? path.resolve(Path.replace(/^~/, process.env.HOME)) : path.resolve(baseDir, Path);
+   * replace ~/ -> $HOME env
+   *
+   * @param {String} Path
+   * @return {String} Path
+   */
+  const resolvePath = Path =>
+    Path.startsWith('/') || Path.startsWith('~')
+      ? path.resolve(Path.replace(/^~/, process.env.HOME))
+      : path.resolve(baseDir, Path);
+
+  if (!fs.existsSync(configPath)) {
+    console.error(`Config file not found: ${configPath}`);
+  }
 
   // Get methods from os module
-  let {
-    uptime,
-    platform,
-    hostname,
-    networkInterfaces,
-    cpus,
-    userInfo
-  } = os;
+  let { uptime, platform, hostname, networkInterfaces, cpus, userInfo } = os;
 
   /*
-  * show memory bar
-  *
-  * @param {String} Percentage
-  */
-  const showProgressBar = (Percentage) => {
+   * show memory bar
+   *
+   * @param {String} Percentage
+   */
+  const showProgressBar = Percentage => {
     const BAR_LENGTH = 24;
     let blockCount = Math.floor(Percentage / (100 / BAR_LENGTH));
 
     progressColor = color;
 
-    if (color === "\x1b[37m" || color === "\x1b[97m") {
-      progressColor = "\x1b[90m";
+    if (color === '\x1b[37m' || color === '\x1b[97m') {
+      progressColor = '\x1b[90m';
     }
 
     let emptyCount = BAR_LENGTH - blockCount;
     let blockFilled = `\x1b[96m${progressColor}█`;
 
-    let blockEmpty = "\x1b[37m█";
-    let resetColor = "\x1b[0m";
+    let blockEmpty = '\x1b[37m█';
+    let resetColor = '\x1b[0m';
 
-    let progressBar = "";
+    let progressBar = '';
 
     for (let i = 0; i < blockCount; i++) {
       progressBar += blockFilled;
@@ -121,43 +127,49 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * os name & arch version
-  *
-  * @return {String} resultString
-  */
+   * os name & arch version
+   *
+   * @return {String} resultString
+   */
   const osInfo = () => {
     try {
-      let resultString = "";
+      let resultString = '';
 
-      const archVersion = os.arch() === "x64" ? "x86_64" : os.arch();
+      const archVersion = os.arch() === 'x64' ? 'x86_64' : os.arch();
       let osName = platform();
 
-      if (osName == "linux") {
-        if (fs.existsSync("/etc/os-release")) {
-          let osRelease = fs.readFileSync("/etc/os-release", "utf-8");
+      if (osName == 'linux') {
+        if (fs.existsSync('/etc/os-release')) {
+          let osRelease = fs.readFileSync('/etc/os-release', 'utf-8');
 
           const MATCH = osRelease.match(/^PRETTY_NAME="(.+)"$/m);
           if (MATCH) osName = MATCH[1];
         }
-      } else if (osName == "win32") {
+      } else if (osName == 'win32') {
         try {
-          osName = execSync('wmic os get Caption', { encoding: "utf-8" })
-            .split("\n")[1]
+          osName = execSync(
+            'powershell -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; (Get-CimInstance -ClassName Win32_OperatingSystem).Caption"',
+            { encoding: 'utf-8' }
+          )
+            .toString()
             .trim();
         } catch {
-          osName = "Windows (Unknown Version)";
+          osName = 'Windows (Unknown Version)';
         }
-      } else if (osName == "darwin") {
-        osName = execSync("sw_vers -productName", { encoding: "utf-8" }).trim();
+      } else if (osName == 'darwin') {
+        osName = execSync('sw_vers -productName', {
+          encoding: 'utf-8',
+        }).trim();
 
-        const VERSION = execSync("sw_vers -productVersion", { encoding: "utf-8" }).trim();
+        const VERSION = execSync('sw_vers -productVersion', {
+          encoding: 'utf-8',
+        }).trim();
 
         osName += ` ${VERSION}`;
       }
 
       resultString = `${osName} ${archVersion}`;
       return resultString;
-
     } catch (e) {
       console.error(e);
       return;
@@ -165,37 +177,45 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * host name info
-  *
-  * @return {String} resultString
-  */
+   * host name info
+   *
+   * @return {String} resultString
+   */
   const hostInfo = () => {
-    let resultString = "";
+    let resultString = '';
 
     const HOST_NAME = hostname();
-    let model = "Unknown Model";
+    let model = 'Unknown Model';
 
-    if (os.platform() === "linux") {
-      if (fs.existsSync("/sys/class/dmi/id/product_name")) {
-        model = fs.readFileSync("/sys/class/dmi/id/product_name", "utf-8").trim();
+    if (os.platform() === 'linux') {
+      if (fs.existsSync('/sys/class/dmi/id/product_name')) {
+        model = fs
+          .readFileSync('/sys/class/dmi/id/product_name', 'utf-8')
+          .trim();
       }
-    } else if (os.platform() === "darwin") {
+    } else if (os.platform() === 'darwin') {
       try {
-        model = execSync("system_profiler SPHardwareDataType | grep 'Model Identifier'", {
-          encoding: "utf-8",
-        })
-          .split(":")[1]
+        model = execSync(
+          "system_profiler SPHardwareDataType | grep 'Model Identifier'",
+          {
+            encoding: 'utf-8',
+          }
+        )
+          .split(':')[1]
           .trim();
       } catch {
-        model = "Mac (Unknown Model)";
+        model = 'Mac (Unknown Model)';
       }
-    } else if (os.platform() === "win32") {
+    } else if (os.platform() === 'win32') {
       try {
-        model = execSync('wmic computersystem get Model', { encoding: "utf-8" })
-          .split("\n")[1]
+        model = execSync(
+          'powershell -Command "(Get-CimInstance -ClassName Win32_ComputerSystem).Model"',
+          { encoding: 'utf-8' }
+        )
+          .toString()
           .trim();
       } catch {
-        model = "Windows PC (Unknown Model)";
+        model = 'Windows PC (Unknown Model)';
       }
     }
 
@@ -204,15 +224,15 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * kernel info
-  *
-  * @return {String} kernelInfo
-  */
+   * kernel info
+   *
+   * @return {String} kernelInfo
+   */
   const kernelInfo = () => {
     let kernel;
 
-    if (os.platform() == "linux") {
-      kernel = execSync("uname -r");
+    if (os.platform() == 'linux') {
+      kernel = execSync('uname -r');
 
       let kernelInfo = kernel.toString().trim();
       return kernelInfo;
@@ -222,15 +242,17 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * uptime info
-  *
-  * @return {String} uptimeStr
-  */
+   * uptime info
+   *
+   * @return {String} uptimeStr
+   */
   const uptimeInfo = () => {
     let uptimeSec = uptime();
 
     const YEARS = Math.floor(uptimeSec / (3600 * 24 * 365));
-    const MONTHS = Math.floor((uptimeSec % (3600 * 24 * 365)) / (3600 * 24 * 30));
+    const MONTHS = Math.floor(
+      (uptimeSec % (3600 * 24 * 365)) / (3600 * 24 * 30)
+    );
 
     const WEEKS = Math.floor((uptimeSec % (3600 * 24 * 30)) / (3600 * 24 * 7));
     const DAYS = Math.floor((uptimeSec % (3600 * 24 * 7)) / (3600 * 24));
@@ -238,7 +260,7 @@ const main = (ARGUMENTS) => {
     const HOURS = Math.floor((uptimeSec % (3600 * 24)) / 3600);
     const MINUTES = Math.floor((uptimeSec % 3600) / 60);
 
-    let uptimeStr = "";
+    let uptimeStr = '';
 
     if (YEARS > 0) uptimeStr += `${YEARS}y `;
     if (MONTHS > 0) uptimeStr += `${MONTHS}mo `;
@@ -253,10 +275,10 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * home directory
-  *
-  * @return {String} homeDir
-  */
+   * home directory
+   *
+   * @return {String} homeDir
+   */
   const homeInfo = () => {
     const HOME_INFO = userInfo();
     let homeDir = HOME_INFO.homedir;
@@ -265,48 +287,58 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * shell info
-  *
-  * @return {String} resultString
-  */
+   * shell info
+   *
+   * @return {String} resultString
+   */
   const shellInfo = () => {
-    let resultString = "";
-    const SHELL_INFO = userInfo();
-
-    let shell = SHELL_INFO.shell || "unknown";
-    let version = "Undefined";
-
-    const shells = ["bash", "zsh", "fish", "csh", "tcsh", "dash", "sh", "ksh"];
-
-    for (const sh of shells) {
-      if (shell.includes(sh)) {
-        shell = sh;
-        break;
-      }
-    }
-
     try {
-      version = execSync(`${shell} --version`).toString().trim();
-      const VERSION_MATCH = version.match(/(?:version\s)([\d\.]+[\w\.-]*)/);
+      const platform = os.platform();
 
-      if (VERSION_MATCH) {
-        return `${shell} ${VERSION_MATCH[1]}`
+      if (platform === 'win32') {
+        // On Windows, show either PowerShell or CMD
+        const shellEnv = process.env.COMSPEC || 'cmd.exe';
+        const isPowerShell = shellEnv.toLowerCase().includes('powershell');
+
+        if (isPowerShell) {
+          const version = execSync(
+            'powershell -command "$PSVersionTable.PSVersion.ToString()"',
+            { encoding: 'utf-8' }
+          ).trim();
+          return `PowerShell ${version}`;
+        } else {
+          return 'CMD';
+        }
       }
 
-    } catch (e) {
-      console.error(`Error fetching version for ${shell}: `, e);
-      return;
-    }
+      // UNIX-like systems
+      const SHELL_INFO = userInfo();
+      let shell = SHELL_INFO.shell || 'sh';
+      const shellName = path.basename(shell);
 
-    resultString = `${shell}`;
-    return resultString;
+      const versionOutput = execSync(`${shell} --version`, {
+        encoding: 'utf-8',
+      });
+      const versionMatch = versionOutput.match(
+        /(?:version\s)?([\d\.]+[\w\.-]*)/i
+      );
+
+      if (versionMatch) {
+        return `${shellName} ${versionMatch[1]}`;
+      }
+
+      return shellName;
+    } catch (e) {
+      console.error(`Error fetching shell version:`, e.message);
+      return 'Unknown Shell';
+    }
   };
 
   /*
-  * ip info
-  *
-  * @return {String} ip
-  */
+   * ip info
+   *
+   * @return {String} ip
+   */
   const ipInfo = () => {
     if (ip) {
       let nets = networkInterfaces();
@@ -314,7 +346,7 @@ const main = (ARGUMENTS) => {
 
       for (const key in nets) {
         for (const net of nets[key]) {
-          if (net.family === "IPv4" && !net.internal) {
+          if (net.family === 'IPv4' && !net.internal) {
             ipRes = net.address;
 
             return ipRes.trim();
@@ -328,21 +360,41 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * resolution info
-  *
-  * @return {String} result
-  */
+   * resolution info
+   *
+   * @return {String} result
+   */
   const resolutionInfo = () => {
-    let resolution = "";
-    let result = "";
+    let resolution = '';
+    let result = '';
 
     try {
-      if (os.platform() == "linux") {
+      if (os.platform() === 'win32') {
+        const output = execSync(
+          'powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Size | Out-String"',
+          { encoding: 'utf-8' }
+        );
+
+        const match = output.match(/(\d+)\s+(\d+)/);
+
+        if (match) {
+          result = `${match[1]}x${match[2]}`;
+        } else {
+          result = 'not found';
+        }
+
+        return result;
+      }
+
+      if (os.platform() === 'linux') {
         resolution = execSync('xrandr | grep "\\*"').toString().trim();
-      } else if (os.platform() == "darwin") {
-        resolution = execSync('system_profiler SPDisplaysDataType | grep "Resolution"').toString().trim();
-      } else if (os.platform() == "win32") {
-        resolution = execSync('wmic desktopmonitor get screenheight,screenwidth').toString().trim();
+      } else if (os.platform() === 'darwin') {
+        resolution = execSync(
+          'system_profiler SPDisplaysDataType | grep Resolution',
+          { encoding: 'utf-8' }
+        )
+          .toString()
+          .trim();
       }
 
       if (resolution) {
@@ -351,20 +403,21 @@ const main = (ARGUMENTS) => {
       }
 
       return result;
-
     } catch (e) {
       console.error(e);
-      return;
+      return 'error';
     }
   };
 
   /*
-  * desktop environment
-  *
-  * @return {String} _de[0]
-  */
+   * desktop environment
+   *
+   * @return {String} _de[0]
+   */
   const deInfo = () => {
-    const _de = process.env.XDG_CURRENT_DESKTOP ? process.env.XDG_CURRENT_DESKTOP.match(/(\w+)$/) : 0;
+    const _de = process.env.XDG_CURRENT_DESKTOP
+      ? process.env.XDG_CURRENT_DESKTOP.match(/(\w+)$/)
+      : 0;
 
     if (_de) {
       return _de[0].trim();
@@ -374,18 +427,19 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * terminal
-  *
-  * @return {String} terminal
-  */
+   * terminal
+   *
+   * @return {String} terminal
+   */
   const terminalInfo = () => {
-    let terminal = "unknown";
+    let terminal = 'unknown';
 
     try {
-      if (os.platform() == "linux" || os.platform() == "darwin") {
+      if (os.platform() == 'linux' || os.platform() == 'darwin') {
         terminal = execSync('ps -p $$ -o comm=').toString().trim();
-      } else if (os.platform() == "win32") {
-        terminal = execSync('echo $env:Term').toString().trim();
+      } else if (os.platform() == 'win32') {
+        terminal =
+          process.env.TERM || process.env.Term || 'Windows Terminal or CMD';
       }
 
       return terminal;
@@ -396,10 +450,10 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * get cpu info
-  *
-  * @return {String} model
-  */
+   * get cpu info
+   *
+   * @return {String} model
+   */
   const cpuInfo = () => {
     const CPU = cpus();
     let model = CPU[0].model;
@@ -408,27 +462,35 @@ const main = (ARGUMENTS) => {
   };
 
   /*
-  * get gpu info
-  *
-  * @return {String} gpu
-  */
+   * get gpu info
+   *
+   * @return {String} gpu
+   */
   const gpuInfo = () => {
-    let gpu = "unknown";
+    let gpu = 'unknown';
 
     try {
-      if (os.platform() == "linux") {
-        let gpuOut = execSync("lshw -C display").toString().trim();
+      if (os.platform() == 'linux') {
+        let gpuOut = execSync('lshw -C display').toString().trim();
         let prod = gpuOut.match(/product:\s(.*)/);
 
         gpu = prod && prod[1] ? prod[1].trim() : 'unknown';
-      } else if (os.platform() == "win32") {
-        gpu = execSync("wmic path win32_videocontroller get caption").toString().trim();
-      } else if (os.platform() == "darwin") {
-        gpu = execSync("system_profiler SPDisplaysDataType | grep 'Chipset Model'").toString().trim();
+      } else if (os.platform() == 'win32') {
+        gpu = execSync(
+          'powershell -Command "Get-CimInstance -ClassName Win32_VideoController | Select-Object -ExpandProperty Name"',
+          { encoding: 'utf-8' }
+        )
+          .toString()
+          .trim();
+      } else if (os.platform() == 'darwin') {
+        gpu = execSync(
+          "system_profiler SPDisplaysDataType | grep 'Chipset Model'"
+        )
+          .toString()
+          .trim();
       }
 
       return gpu;
-
     } catch (e) {
       console.error(e);
       return;
@@ -439,27 +501,27 @@ const main = (ARGUMENTS) => {
     let user = os.userInfo().username;
 
     return user;
-  }
+  };
 
   const getHostInfo = () => {
     let host = os.hostname();
 
     return host;
-  }
+  };
 
   const createFullUser = () => {
-    let result = "";
+    let result = '';
 
     let host = getHostInfo();
     let user = getUserInfo();
 
     result += `\x1b[1m${color}${user}\x1b[0m@\x1b[1m${color}${host}`;
     return result;
-  }
+  };
 
   const createHyphen = () => {
-    const SYMB = "-";
-    let hyphen = "";
+    const SYMB = '-';
+    let hyphen = '';
 
     let user = getUserInfo();
     let host = getHostInfo();
@@ -471,21 +533,21 @@ const main = (ARGUMENTS) => {
     }
 
     return hyphen;
-  }
+  };
 
   /*
-  * get memory info
-  *
-  * @return {String} result
-  */
+   * get memory info
+   *
+   * @return {String} result
+   */
   const memoryInfo = () => {
-    let result = "";
+    let result = '';
 
     let freeMem = os.freemem();
     let totalMem = os.totalmem();
 
-    let freeMemGB = (freeMem / 1024 / 1024 ).toFixed(0);
-    let totalMemGB = (totalMem / 1024 / 1024 ).toFixed(0);
+    let freeMemGB = (freeMem / 1024 / 1024).toFixed(0);
+    let totalMemGB = (totalMem / 1024 / 1024).toFixed(0);
 
     let occupiedMemGB = (totalMemGB - freeMemGB).toFixed(0);
 
@@ -495,6 +557,8 @@ const main = (ARGUMENTS) => {
     result = `${occupiedMemGB}MiB / ${totalMemGB}MiB (${usedMemoryPercent}%)`;
     return result;
   };
+
+  const stripAnsiCodes = str => str.replace(/\x1b\[[0-9;]*m/g, '');
 
   const displayOutput = () => {
     // create variables
@@ -520,63 +584,49 @@ const main = (ARGUMENTS) => {
       `\x1b[0m${_}`,
       `\x1b[1m${color}OS:\x1b[0m ${_OS}`,
       `\x1b[1m${color}Host:\x1b[0m ${_HOST}`,
-      `\x1b[1m${color}Kernel:\x1b[0m ${_KERNEL === 0 ? "" : _KERNEL}`,
+      `\x1b[1m${color}Kernel:\x1b[0m ${_KERNEL === 0 ? 'Win NT' : _KERNEL}`,
       `\x1b[1m${color}Uptime:\x1b[0m ${_UPTIME}`,
       `\x1b[1m${color}Home:\x1b[0m ${_HOME}`,
       `\x1b[1m${color}Shell:\x1b[0m ${_SHELL}`,
       `\x1b[1m${color}Resolution:\x1b[0m ${_RESOLUTION}`,
-      `\x1b[1m${color}DE:\x1b[0m ${_DE === 0 ? "" : _DE}`,
+      `\x1b[1m${color}DE:\x1b[0m ${_DE === 0 ? 'Win32' : _DE}`,
       `\x1b[1m${color}Terminal:\x1b[0m ${_TERMINAL}`,
-      `\x1b[1m${color}IP:\x1b[0m ${ip === false ? "127.0.0.1" : _IP}`,
+      `\x1b[1m${color}IP:\x1b[0m ${ip === false ? '127.0.0.1' : _IP}`,
       `\x1b[1m${color}GPU:\x1b[0m ${_GPU}`,
       `\x1b[1m${color}CPU:\x1b[0m ${_CPU}`,
       `\x1b[1m${color}Memory:\x1b[0m ${_MEM}`,
       `\x1b[1m${color}Memory Scheme:\x1b[0m ${global.memoryBar}`,
     ];
-  }
-
-  // get path to config file
-  let configPath = process.env.CONFIG_PATH ? resolvePath(process.env.CONFIG_PATH) : path.resolve(__dirname, "config", "default.json");
-
-  if (!fs.existsSync(configPath)) {
-    console.error(`Config file not found: ${configPath}`);
-  }
+  };
 
   const parseConfig = () => {
     try {
-      config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
     } catch (e) {
       console.error(`Error reading config file: ${e}`);
     }
-  }
+  };
 
-  console.log("\n");
+  console.log('\n');
 
   parseConfig();
 
-  let {
-    image,
-    imageParams,
-    artPath,
-    randomColor,
-    foregroundColor,
-    ip,
-  } = config;
+  let { image, imageParams, artPath, randomColor, foregroundColor, ip } =
+    config;
 
   /*
-  * change terminal color with ansi codes
-  *
-  * @param {String} Foreground
-  */
-  const changeTerminalColor = (Foreground) => {
+   * change terminal color with ansi codes
+   *
+   * @param {String} Foreground
+   */
+  const changeTerminalColor = Foreground => {
     console.log(Foreground);
     color = Foreground;
   };
 
-  // create base directory
-  const baseDir = path.dirname(path.join(configPath, ".."));
-
-  artPath = artPath ? resolvePath(artPath) : path.join(baseDir, "assets/ascii.txt");
+  artPath = artPath
+    ? resolvePath(artPath)
+    : path.join(baseDir, 'assets/ascii.txt');
 
   if (imageParams && imageParams.path) {
     imageParams.path = resolvePath(imageParams.path);
@@ -588,25 +638,23 @@ const main = (ARGUMENTS) => {
   }
 
   /*
-  * type ascii
-  *
-  * @param {String} Input
-  */
-  const typeAscii = (Input) => {
+   * type ascii
+   *
+   * @param {String} Input
+   */
+  const typeAscii = (Input, InfoArr) => {
     let asciiText;
 
-    if (typeof Input === "string") {
-      asciiText = Input.split("\n");
+    if (typeof Input === 'string') {
+      asciiText = Input.split('\n');
     } else if (Array.isArray(Input)) {
       asciiText = Input;
     } else {
-      console.error("Invalid ASCII input");
+      console.error('Invalid ASCII input');
       return;
     }
 
     displayOutput();
-
-    console.log("\n\n");
 
     if (!Array.isArray(infoArr) || infoArr.length === 0) {
       console.error(`infoArr is empty`);
@@ -614,31 +662,46 @@ const main = (ARGUMENTS) => {
     }
 
     const maxLines = Math.max(asciiText.length, infoArr.length);
-    const asciiPadded = [...asciiText, ...Array(maxLines - asciiText.length).fill("")];
+    const asciiPadded = [
+      ...asciiText,
+      ...Array(maxLines - asciiText.length).fill(''),
+    ];
 
-    asciiPadded.forEach((line, index) => {
-        const infoLine = infoArr[index] || "";
-        console.log(`\x1b[1m${color}${line.padEnd(28)}  ${infoLine}\x1b[0m`);
-    });
+    const infoPadded = [
+      ...infoArr,
+      ...Array(maxLines - infoArr.length).fill(''),
+    ];
 
-    console.log("\n");
+    const maxAsciiWidth = Math.max(...asciiPadded.map(line => line.length));
+    const asciiColumnWidth = Math.max(30, maxAsciiWidth + 2);
+
+    for (let i = 0; i < maxLines; i++) {
+      const asciiLine = asciiPadded[i].padEnd(asciiColumnWidth, ' ');
+      console.log(asciiLine + infoPadded[i]);
+    }
+
+    console.log('\n');
   };
 
   const showASCII = async () => {
     try {
-      if (!artPath || typeof artPath !== "string") {
+      if (!artPath || typeof artPath !== 'string') {
         console.error(`Invalid ASCII art path`);
-        return "";
+        return '';
       }
 
       if (!fs.existsSync(artPath)) {
         console.error(`ASCII-art file not found: ${artPath}`);
-        return "";
+        return '';
       }
 
-      let asciiText = fs.readFileSync(artPath, { encoding: "utf-8" }).split("\n");
-      typeAscii(asciiText);
+      displayOutput();
 
+      let asciiText = fs
+        .readFileSync(artPath, { encoding: 'utf-8' })
+        .split('\n');
+
+      typeAscii(asciiText, infoArr);
     } catch (e) {
       console.error(e);
       return;
@@ -649,17 +712,16 @@ const main = (ARGUMENTS) => {
     if (!imageParams || !fs.existsSync(imageParams.path)) {
       console.error(`Image file not found: ${imageParams.path}`);
       return;
-    }
-    else {
+    } else {
       return new Promise((resolve, reject) => {
         asciify(imageParams.path, imageParams, (err, asciified) => {
-
           if (err) {
             reject(`Error displaying image: ${err}`);
             return;
           }
 
-          typeAscii(asciified);
+          displayOutput();
+          typeAscii(asciified.split('\n'), infoArr);
           resolve();
         });
       });
@@ -669,7 +731,8 @@ const main = (ARGUMENTS) => {
   const checkConfig = () => {
     try {
       if (randomColor) {
-        let rnd = ANSI_FORE_COLORS[Math.floor(Math.random() * ANSI_FORE_COLORS.length)];
+        let rnd =
+          ANSI_FORE_COLORS[Math.floor(Math.random() * ANSI_FORE_COLORS.length)];
 
         changeTerminalColor(rnd);
       }
@@ -687,13 +750,13 @@ const main = (ARGUMENTS) => {
         return;
       }
     } catch (e) {
-        console.error(e);
-        return;
+      console.error(e);
+      return;
     }
   };
 
   // CONFIG statement
   if (config) checkConfig();
-}
+};
 
 main(ARGUMENTS);
