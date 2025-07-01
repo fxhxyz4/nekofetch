@@ -686,6 +686,8 @@ const main = ARGUMENTS => {
         .readFileSync(artPath, { encoding: 'utf-8' })
         .split('\n');
 
+      asciiText = asciiText.map(line => color + line + '\x1b[0m');
+
       typeAscii(asciiText, infoArr);
     } catch (e) {
       console.error(e);

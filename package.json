@@ -37,7 +37,7 @@
   "scripts": {
     "dev": "nodemon .",
     "dev-config": "cross-env CONFIG_PATH=$HOME/Desktop/dev/nekofetch/config/default.json nodemon .",
-    "dev-config-win": "cross-env CONFIG_PATH=C:/Users/lol/Desktop/dev/nekofetch/config/default.json nodemon .",
+    "dev-config-win": "cross-env CONFIG_PATH=C:/Users/cadet51/Desktop/dev/nekofetch/config/default.json nodemon .",
     "dev-test-config": "cross-env CONFIG_PATH=$HOME/Desktop/dev/nekofetch/config/config.json nodemon .",
     "node": "node .",
     "node-config": "cross-env CONFIG_PATH=$HOME/Desktop/dev/nekofetch/config/default.json node .",
