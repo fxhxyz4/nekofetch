@@ -558,14 +558,6 @@ const main = ARGUMENTS => {
     return result;
   };
 
-  const containsAnsi = str => /\x1b\[[0-9;]*m/.test(str);
-
-  const stripAnsiCodes = str =>
-    str
-      .replace(/\x1b\[[0-9;]*m/g, '') // основной SGR
-      .replace(/\x1b\][0-?]*[ -\/]*[@-~]/g, '') // OSC, CSI и другие
-      .replace(/\x1b[=><()][0-9]*;/g, ''); // дополнительные escape
-
   const displayOutput = () => {
     // create variables
     const _ = createHyphen();
@@ -643,14 +635,14 @@ const main = ARGUMENTS => {
     return;
   }
 
+  const stripAnsi = s => s.replace(/\x1b\[[0-9;]*m/g, '');
+
   /*
    * type ascii
    *
    * @param {String} Input
    */
-  const stripAnsi = s => s.replace(/\x1b\[[0-9;]*m/g, '');
-
-  function typeAscii(asciiArr, infoArr) {
+  const typeAscii = (asciiArr, infoArr) => {
     const maxLines = Math.max(asciiArr.length, infoArr.length);
     const asciiPadded = [
       ...asciiArr,
@@ -674,7 +666,7 @@ const main = ARGUMENTS => {
         asciiLine + ' '.repeat(padCount) + (infoPadded[i] || '') + '\n'
       );
     }
-  }
+  };
 
   const showASCII = async () => {
     try {
