@@ -6,7 +6,7 @@
     "width": 20,
     "height": 16
   },
-  "artPath": "./assets/ascii_test.txt",
+  "artPath": "./assets/ascii.txt",
   "randomColor": true,
   "foregroundColor": "\u001B[96m",
   "ip": true
