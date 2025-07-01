@@ -10,14 +10,16 @@
 
 ![image.png](./assets/image.png)
 
-+ ### How to [install](https://github.com/fxhxyz4/nekofetch/wiki/install)?
-+ ### Check [wiki](https://github.com/fxhxyz4/nekofetch/wiki) for more information.
+- ### How to [install](https://github.com/fxhxyz4/nekofetch/wiki/install)?
+- ### Check [wiki](https://github.com/fxhxyz4/nekofetch/wiki) for more information.
 
 #
 
 ### how to build nekofetch?
-+ ### read [contribution](CONTRIBUTION.md).
-+ ### install packages & build.
+
+- ### read [contribution](CONTRIBUTION.md).
+- ### install packages & build.
+
 ```bash
    sudo chmod +x ./build.sh && ./build.sh
 ```
@@ -25,6 +27,7 @@
 #
 
 ### Suggestions:
+
 - ### write in [issues](https://github.com/fxhxyz4/nekofetch/issues).
 - ### write in [discussions](https://github.com/fxhxyz4/nekofetch/discussions/).
 
