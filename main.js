@@ -558,7 +558,13 @@ const main = ARGUMENTS => {
     return result;
   };
 
-  const stripAnsiCodes = str => str.replace(/\x1b\[[0-9;]*m/g, '');
+  const containsAnsi = str => /\x1b\[[0-9;]*m/.test(str);
+
+  const stripAnsiCodes = str =>
+    str
+      .replace(/\x1b\[[0-9;]*m/g, '') // основной SGR
+      .replace(/\x1b\][0-?]*[ -\/]*[@-~]/g, '') // OSC, CSI и другие
+      .replace(/\x1b[=><()][0-9]*;/g, ''); // дополнительные escape
 
   const displayOutput = () => {
     // create variables
@@ -642,48 +648,33 @@ const main = ARGUMENTS => {
    *
    * @param {String} Input
    */
-  const typeAscii = (Input, InfoArr) => {
-    let asciiText;
+  const stripAnsi = s => s.replace(/\x1b\[[0-9;]*m/g, '');
 
-    if (typeof Input === 'string') {
-      asciiText = Input.split('\n');
-    } else if (Array.isArray(Input)) {
-      asciiText = Input;
-    } else {
-      console.error('Invalid ASCII input');
-      return;
-    }
-
-    displayOutput();
-
-    if (!Array.isArray(infoArr) || infoArr.length === 0) {
-      console.error(`infoArr is empty`);
-      return;
-    }
-
-    const maxLines = Math.max(asciiText.length, infoArr.length);
+  function typeAscii(asciiArr, infoArr) {
+    const maxLines = Math.max(asciiArr.length, infoArr.length);
     const asciiPadded = [
-      ...asciiText,
-      ...Array(maxLines - asciiText.length).fill(''),
+      ...asciiArr,
+      ...Array(maxLines - asciiArr.length).fill(''),
     ];
-
     const infoPadded = [
       ...infoArr,
       ...Array(maxLines - infoArr.length).fill(''),
     ];
 
-    const maxAsciiWidth = Math.max(...asciiPadded.map(line => line.length));
-    const asciiColumnWidth = Math.max(30, maxAsciiWidth + 2);
+    const hasAnsi = asciiPadded.some(line => /\x1b\[[0-9;]*m/.test(line));
+    const visibleLen = line => (hasAnsi ? stripAnsi(line).length : line.length);
 
-    console.log('\n\n');
+    const maxWidth = Math.max(...asciiPadded.map(visibleLen));
+    const gap = 2;
 
     for (let i = 0; i < maxLines; i++) {
-      const asciiLine = asciiPadded[i].padEnd(asciiColumnWidth, ' ');
-      console.log(asciiLine + infoPadded[i]);
+      const asciiLine = asciiPadded[i];
+      const padCount = maxWidth - visibleLen(asciiLine) + gap;
+      process.stdout.write(
+        asciiLine + ' '.repeat(padCount) + (infoPadded[i] || '') + '\n'
+      );
     }
-
-    console.log('\n');
-  };
+  }
 
   const showASCII = async () => {
     try {

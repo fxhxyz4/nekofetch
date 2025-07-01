@@ -1,13 +1,13 @@
 {
-  "image": true,
+  "image": false,
   "imageParams": {
     "path": "./assets/girl.jpg",
     "fit": "box",
     "width": 20,
     "height": 16
   },
-  "artPath": "./assets/ascii.txt",
-  "randomColor": false,
+  "artPath": "./assets/ascii_test.txt",
+  "randomColor": true,
   "foregroundColor": "\u001B[96m",
-  "ip": false
+  "ip": true
 }
