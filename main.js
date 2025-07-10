@@ -605,8 +605,6 @@ const main = ARGUMENTS => {
     }
   };
 
-  console.log('\n');
-
   parseConfig();
 
   let { image, imageParams, artPath, randomColor, foregroundColor, ip } =
@@ -659,9 +657,12 @@ const main = ARGUMENTS => {
     const maxWidth = Math.max(...asciiPadded.map(visibleLen));
     const gap = 2;
 
+    console.log('\n\n\n');
+
     for (let i = 0; i < maxLines; i++) {
       const asciiLine = asciiPadded[i];
       const padCount = maxWidth - visibleLen(asciiLine) + gap;
+
       process.stdout.write(
         asciiLine + ' '.repeat(padCount) + (infoPadded[i] || '') + '\n'
       );
