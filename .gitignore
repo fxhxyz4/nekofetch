@@ -2,6 +2,7 @@
 text.txt
 build/
 package-lock.*
+pnpm-lock.yaml
 
 # Logs
 logs
